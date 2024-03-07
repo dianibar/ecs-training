@@ -31,35 +31,10 @@ module "ecs" {
 
   cluster_name = local.name
 
-  cluster_configuration = {
-    execute_command_configuration = {
-      logging = "OVERRIDE"
-      log_configuration = {
-        cloud_watch_log_group_name = "/aws/ecs/ecs-exec-demo"
-      }
-    }
-  }
-
-  # Capacity provider
-  fargate_capacity_providers = {
-    FARGATE = {
-      default_capacity_provider_strategy = {
-        weight = 50
-        base   = 20
-      }
-    }
-    FARGATE_SPOT = {
-      default_capacity_provider_strategy = {
-        weight = 50
-      }
-    }
-  }
-
   services = {
 
     ecsdemo-frontend = {
-
-      enable_execute_command = true
+      desired_count          = 1
       cpu                    = 1024
       memory                 = 4096
 
