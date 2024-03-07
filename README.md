@@ -16,10 +16,17 @@
 3. Provide a name and leave the default options as default  
 4. In the list of environments chose the option Open 
 5. To install terraform run the following commands
+
  ``` 
  wget https://releases.hashicorp.com/terraform/1.7.4/terraform_1.7.4_linux_amd64.zip
  unzip terraform_1.7.4_linux_amd64.zip
  sudo mv terraform /usr/local/bin
+ ```
+
+ 6. Install session manager plugin
+ ```
+ sudo curl --silent --location "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+ sudo yum install session-manager-plugin.rpm
  ```
 
 <!-- ABOUT THE PROJECT -->
@@ -96,9 +103,155 @@ terraform apply
 
 ## Access the container using ECS Exec
 
+Open the file ecs-training/ecs-cluster/complete/main.tf and do the following 
+modifications:
 
+1. Modify the cluster to configure the CloudWatch log group where the exec 
+   will be logged
+    ```
+   ...
+   cluster_name = local.name
 
+   cluster_configuration = {
+    execute_command_configuration = {
+      logging = "OVERRIDE"
+      log_configuration = {
+        cloud_watch_log_group_name = "/aws/ecs/ecs-exec-demo"
+      }
+    }
+  }
+  
+  services = {
+  ... 
+  ```
+2. In the container enable ecs-exec using 'enable_execute_command = true'
 
+```
+    ecsdemo-frontend = {
+      enable_execute_command = true
+      cpu    = 1024
+```
+
+3. Add permissions to the service task to access ssm and CloudWatch Logs:
+
+```
+      tasks_iam_role_statements = [
+        {
+          actions   = ["s3:List*"]
+          resources = ["arn:aws:s3:::*"]
+        },
+        {
+          actions   = ["logs:CreateLogStream", 
+            "logs:PutLogEvents", 
+            "logs:DescribeLogStreams"]
+          resources = ["*"]
+        },
+        {
+          actions   = ["ssmmessages:CreateControlChannel",
+            "ssmmessages:CreateDataChannel",
+            "ssmmessages:OpenControlChannel",
+            "ssmmessages:OpenDataChannel"]
+          resources = ["*"]
+        }
+
+      ]
+```
+4. Apply the changes
+
+```
+terraform apply
+```
+5. Access the container
+
+```
+ aws ecs execute-command \
+  --region ap-southeast-2 \
+  --cluster <clustername> \
+  --task <taskid> \
+  --container <containername> \
+  --command "/bin/bash" \
+  --interactive
+```
+
+## Add Fargate Spot instances
+
+1. Add the capacity provider to the cluster
+
+```
+...
+ cluster_configuration = {
+    execute_command_configuration = {
+      logging = "OVERRIDE"
+      log_configuration = {
+        cloud_watch_log_group_name = "/aws/ecs/ecs-exec-demo"
+      }
+    }
+  }
+
+  # Capacity provider
+  fargate_capacity_providers = {
+    FARGATE = {
+      default_capacity_provider_strategy = {
+        weight = 50
+        base   = 20
+      }
+    }
+    FARGATE_SPOT = {
+      default_capacity_provider_strategy = {
+        weight = 50
+      }
+    }
+  }
+
+  services = {
+...
+```
+2. Open the file ecs-training/ecs-cluster/complete/main.tf and add the capacity provider to the service:
+
+```
+  services = {
+    ecsdemo-frontend = {
+      capacityProviderStrategy = {
+          "capacityProvider": "FARGATE_SPOT",
+          "weight": 1,
+          "base": 0
+      }
+      capacityProviderStrategy = {
+          "capacityProvider": "FARGATE",
+          "weight": 1,
+          "base": 1
+      }
+```
+2. Apply the changes
+
+``` 
+terraform apply
+```
+
+3. Modify the desired_count to four
+```
+    ecsdemo-frontend = {
+    
+      capacityProviderStrategy = {
+          "capacityProvider": "FARGATE_SPOT",
+          "weight": 1,
+          "base": 0
+      }
+      capacityProviderStrategy = {
+          "capacityProvider": "FARGATE",
+          "weight": 1,
+          "base": 1
+      }
+      
+      enable_execute_command = true
+      
+      desired_count          = 4
+      cpu                    = 1024
+
+5. Apply the changes
+``` 
+terraform apply
+```
 ## Create a scheduled task in the EventBridge Scheduler console
 
 1. Open the Amazon EventBridge Scheduler console at https://console.aws.amazon.com/scheduler/home.
@@ -142,13 +295,6 @@ For Schedule group choose default.
 * [Getting started with Cloud 9](https://aws-quickstart.github.io/workshop-terraform-modules/40_setup_cloud9_ide/40_start_cloud9.html)
 * [Running a Batch job using AWS Batch and Docker Image](https://sivachandanc.medium.com)
 * [Using Amazon ECS Exec for debugging](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html)
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

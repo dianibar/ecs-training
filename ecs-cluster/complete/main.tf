@@ -11,9 +11,8 @@ locals {
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
-  container_name         = "ecsdemo-frontend"
+  container_name         = "<user>-frontend"
   container_port         = 3000
-  container_cw_log_group = "/aws/ecs/<user>/ecsdemo-frontend"
 
   tags = {
     Name       = local.name
@@ -64,11 +63,6 @@ module "ecs" {
 
           log_configuration = {
             logDriver = "awslogs"
-            options = {
-              "awslogs-group"         = local.container_cw_log_group
-              "awslogs-region"        = local.region
-              "awslogs-stream-prefix" = "ecs-stream"
-            }
           }
           memory_reservation = 100
         }
