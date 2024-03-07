@@ -192,13 +192,13 @@ terraform apply
   fargate_capacity_providers = {
     FARGATE = {
       default_capacity_provider_strategy = {
-        weight = 50
-        base   = 20
+        weight = 1
+        base   = 1
       }
     }
     FARGATE_SPOT = {
       default_capacity_provider_strategy = {
-        weight = 50
+        weight = 1
       }
     }
   }
@@ -211,15 +211,16 @@ terraform apply
 ```
   services = {
     ecsdemo-frontend = {
-      capacityProviderStrategy = {
-          "capacityProvider": "FARGATE_SPOT",
-          "weight": 1,
-          "base": 0
-      }
-      capacityProviderStrategy = {
-          "capacityProvider": "FARGATE",
-          "weight": 1,
-          "base": 1
+      capacity_provider_strategy = {
+        fargate = {
+          capacity_provider = "FARGATE"
+          weight            = 1
+          base              = 1
+        }
+        spot = {
+          capacity_provider = "FARGATE_SPOT"
+          weight            = 1
+        }
       }
 ```
 2. Apply the changes
