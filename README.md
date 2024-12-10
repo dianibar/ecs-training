@@ -9,18 +9,22 @@
 </div>
 
 <!-- ABOUT THE PROJECT -->
-## Preparing Cloud 9
+## Cloud Shell
 
-1. Go to https://console.aws.amazon.com/cloud9/.
-2. Choose Create environment.
-3. Provide a name and leave the default options as default  
-4. In the list of environments chose the option Open 
-5. To install terraform run the following commands
+1. Go to cloudshell. 
+![CloudShell](images/cloudshell.png).
+2. Check that terraform is installed.
+```
+terraform -version
+```
+
+3. To install terraform run the following commands.
 
  ``` 
  wget https://releases.hashicorp.com/terraform/1.7.4/terraform_1.7.4_linux_amd64.zip
  unzip terraform_1.7.4_linux_amd64.zip
  sudo mv terraform /usr/local/bin
+
  ```
 
  6. Install session manager plugin
@@ -33,32 +37,31 @@
 ## Push and Pull and Image to ECR
 
 ### Create the repository
-1. Open the Amazon ECR console at https://console.aws.amazon.com/ecr/.
-2. Choose Get Started.
-3. For Visibility settings, choose Private.
-4. For Repository name, specify a name for the repository hello_app.
-5. For Tag immutability, choose the tag mutability setting for the repository.
+1. Open the Amazon ECR console at https://console.aws.amazon.com/ecr/repositories.
+2. From the navigation bar, choose the Region to create your repository in.
+3. On the Repositories page, choose Private repositories, and then choose Create repository.
+4. For Repository name, enter a unique name for your repository. 
+5. Use the default settings for the additional parameters.
+6. Choose Create.
+
 
 ### push the image
 1. Create a Folder hello_app
+
+```
+mkdir hello_app
+```
+
 2. Inside the folder create a python script hello_world.py with the following content
 ```
-print("Hello World")
+cd hello_app 
+echo 'print("Hello, World!")' > hello_world.py 
 ```    
 3. In the Same Folder create a dockerfile with the following content
 ```
-# Use an official Python runtime as a parent image
-FROM python:3.8
+ printf 'FROM python:3.8\n\n# Set the working directory to /app\nWORKDIR /app\n\n# Copy the current directory contents into the container at /app\nCOPY ./hello_world.py /app\n\n# Set the entry point to run the scripts\nENTRYPOINT ["python", "hello_world.py"]\n' > Dockerfile
 
-# Set the working directory to /app
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-
-COPY ./hello_world.py /app
-
-# Set the entry point to run the scripts
-ENTRYPOINT ["python", "hello_world.py"]
+ cat Dockerfile
 ```
 4. Build the image 
 docker build -t my-hello-world .
@@ -91,7 +94,20 @@ the string with your own name
 
 ```
 name   = "<user>-${basename(path.cwd)}"
-container_cw_log_group = "/aws/ecs/<user>/ecsdemo-frontend"
+container_cw_log_grecho <<< EOL \
+# Use an official Python runtime as a parent image \
+FROM python:3.8 \
+
+# Set the working directory to /app \
+WORKDIR /app \
+
+# Copy the current directory contents into the container at /app \
+
+COPY ./hello_world.py /app \
+
+# Set the entry point to run the scripts \
+ENTRYPOINT ["python", "hello_world.py"] \
+EOL >> Dockerfileoup = "/aws/ecs/<user>/ecsdemo-frontend"
 ```
 2. Apply the terraform template.
 ```
@@ -299,3 +315,6 @@ For Schedule group choose default.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJLZXkiOiJqSUN1YWRuUldsUXh1aEMxa1duUi4xNzMzNDY1NzQ2LmFJNUN5NUFiaWVBMXdMamsiLCJVc2VySUQiOiJnb29nbGU6MTA4OTc2MjY2ODY2Mzc5NDM0MDI1IiwiRG9pdE93bmVyIjpmYWxzZSwiRG9pdEVtcGxveWVlIjp0cnVlLCJhdWQiOiJjbXAiLCJpYXQiOjE3MzM0NjU3NDYsImlzcyI6ImRvaXQiLCJzdWIiOiJkaWFuYUBkb2l0LmNvbSJ9.9jLWDVjabPk8MsLvnb7ulpWp1w5GBNB7dQW4jSOG_e4
