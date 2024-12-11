@@ -1,0 +1,24 @@
+################################################################################
+# Cluster
+################################################################################
+
+output "vpc" {
+  description = "vpc"
+  value       = module.ecs_example_complete.vpc.aws_vpc.this
+}
+
+output "private_subnets" {
+  description = "ID that identifies the cluster"
+  value       = module.ecs.cluster_id
+}
+
+output "public_subnets" {
+  description = "public subnet"
+  value       = module.ecs.cluster_name
+}
+
+output "private_subnent" {
+  description = "private subnet"
+  value       = module.ecs_example_complete.vpc.aws_subnet.private
+}
+
