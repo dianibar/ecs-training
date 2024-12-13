@@ -94,20 +94,6 @@ the string with your own name
 
 ```
 name   = "<user>-${basename(path.cwd)}"
-container_cw_log_grecho <<< EOL \
-# Use an official Python runtime as a parent image \
-FROM python:3.8 \
-
-# Set the working directory to /app \
-WORKDIR /app \
-
-# Copy the current directory contents into the container at /app \
-
-COPY ./hello_world.py /app \
-
-# Set the entry point to run the scripts \
-ENTRYPOINT ["python", "hello_world.py"] \
-EOL >> Dockerfileoup = "/aws/ecs/<user>/ecsdemo-frontend"
 ```
 2. Apply the terraform template.
 ```
